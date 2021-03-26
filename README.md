@@ -1,2 +1,2 @@
-# lyah
-Learn you a haskell
+# wyas 
+Write you a Scheme
