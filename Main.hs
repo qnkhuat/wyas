@@ -215,19 +215,33 @@ apply func args = maybe (throwError $ NotFunction "Unrecognized primitive functi
                         (lookup func primitives)
 
 primitives :: [(String, [LispVal] -> ThrowsError LispVal)]
-primitives = [("+", numericBinop (+)),
-              ("-", numericBinop (-)),
-              ("*", numericBinop (*)),
-              ("/", numericBinop div),
-              ("mod", numericBinop mod),
-              ("quotient", numericBinop quot),
-              ("remainder", numericBinop rem),
-              ("?eq", compareBinop),
-              --("symbol?" , unaryOp symbolp),
-              --("string?" , unaryOp stringp),
-              --("number?" , unaryOp numberp),
-              ("bool?", unaryOp boolp),
-              ("list?" , unaryOp listp)]
+primitives = [
+                ("+", numericBinop (+)),
+                ("-", numericBinop (-)),
+                ("*", numericBinop (*)),
+                ("/", numericBinop div),
+                ("mod", numericBinop mod),
+                ("quotient", numericBinop quot),
+                ("remainder", numericBinop rem),
+                ("?eq", compareBinop),
+                ("symbol?" , unaryOp symbolp),
+                ("string?" , unaryOp stringp),
+                ("number?" , unaryOp numberp),
+                ("bool?", unaryOp boolp),
+                ("list?" , unaryOp listp),
+                ("=", numBoolBinop (==)),
+                ("<", numBoolBinop (<)),
+                (">", numBoolBinop (>)),
+                ("/=", numBoolBinop (/=)),
+                (">=", numBoolBinop (>=)),
+                ("<=", numBoolBinop (<=)),
+                ("&&", boolBoolBinop (&&)),
+                ("||", boolBoolBinop (||)),
+                ("string=?", strBoolBinop (==)),
+                ("string<?", strBoolBinop (<)),
+                ("string>?", strBoolBinop (>)),
+                ("string<=?", strBoolBinop (<=)),
+                ("string>=?", strBoolBinop (>=))]
 
 unaryOp :: (LispVal -> LispVal) -> [LispVal] -> ThrowsError LispVal
 unaryOp f [v] = return $ f v
@@ -246,7 +260,6 @@ listp   (DottedList _ _) = Bool False
 listp   _          = Bool False
 
 numericBinop :: (Integer -> Integer -> Integer) -> [LispVal] -> ThrowsError LispVal
--- numericBinop op params = Number $ foldl1 op $ map unpackNum params
 numericBinop op           []  = throwError $ NumArgs 2 []
 numericBinop op singleVal@[_] = throwError $ NumArgs 2 singleVal
 numericBinop op params        = mapM unpackNum params >>= return . Number . foldl1 op
