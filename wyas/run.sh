@@ -1,3 +1,5 @@
 stack Main.hs " $"
 stack Main.hs "(a (nested) test)"
 stack Main.hs "(+ 3 4)"
+stack Main.hs "(number? 3)"
+stack Main.hs "(string? 'word')"
