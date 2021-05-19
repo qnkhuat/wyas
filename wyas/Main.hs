@@ -1,4 +1,5 @@
 module Main where
+import Text.Read (readMaybe)
 import Text.ParserCombinators.Parsec hiding (spaces)
 import System.Environment
 import Control.Monad
@@ -99,10 +100,43 @@ primitives = [("+", numericBinop (+)),
               ("/", numericBinop div),
               ("mod", numericBinop mod),
               ("quotient", numericBinop quot),
-              ("remainder", numericBinop rem)]
+              ("remainder", numericBinop rem),
+             ,("not", unaryOp not')
+             ,("boolean?", unaryOp boolP)
+             ,("list?", unaryOp listP)
+             ,("symbol?", unaryOp symbolP)
+             ,("char?", unaryOp charP)
+             ,("string?", unaryOp stringP)
+             ,("vector?", unaryOp vectorP)
+             ]
+
+unaryOp :: (LispVal -> LispVal) -> [LispVal] -> LispVal
+unaryOp func [arg] = func arg
+
+not' (Bool x) = (Bool . not) x
+not' _ = Bool False
+
+boolP (Bool _) = Bool True
+boolP _ = Bool False
+
+listP (List _) = Bool True
+listP (DottedList _ _) = Bool True
+listP _ = Bool False
+
+symbolP (Atom _) = Bool True
+symbolP _ = Bool False
+
+charP (Char _) = Bool True
+charP _ = Bool False
+
+stringP (String _) = Bool True
+stringP _ = Bool False
+
+vectorP (Vector _) = Bool True
+vectorP _ = Bool False
 
 numericBinop :: (Integer -> Integer -> Integer) -> [LispVal] -> LispVal
-numericBinop  op params = Number $ foldl1 op $ map unpackNum params
+numericBinop op params = Number $ foldl1 op $ map unpackNum params
 
 unpackNum :: LispVal -> Integer
 unpackNum (Number n) = n
@@ -110,6 +144,7 @@ unpackNum (String n) = let parsed = reads n :: [(Integer, String)] in
                            if null parsed
                               then 0
                               else fst $ parsed !! 0
+
 unpackNum (List [n]) = unpackNum n
 unpackNum _ = 0
 
